@@ -1,3 +1,36 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --dark: #0d0315;
+  --grey: #161522;
+  --blue: darkslateblue;
+  --white: whitesmoke;
+
+  --sm: 18px;
+}
+
+body {
+  background-color: var(--dark);
+  color: var(--blue);
+}
+
+h1 {
+  color: var(--white);
+}
+
+p {
+  font-size: var(--sm);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
 .mainContainer {
   display: flex;
   justify-content: center;
@@ -21,7 +54,6 @@
 
 .bio {
   text-align: center;
-  color: darkslateblue;
   margin-top: 16px;
 }
 
@@ -31,10 +63,28 @@
   padding: 8px;
   border: 0;
   border-radius: 5px;
+  background-color: var(--blue);
+  color: var(--white);
 }
 
 .avatar {
   max-width: 150px;
   border-radius: 50%;
   margin-bottom: 1rem;
+}
+
+.account {
+  margin: 1rem;
+  text-align: center;
+}
+
+.msgContainer {
+  background-color: var(--grey);
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.msgContainer h2 {
+  color: whitesmoke;
 }

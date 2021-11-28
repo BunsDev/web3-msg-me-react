@@ -125,29 +125,32 @@ useEffect(() => {
     <div className="mainContainer">
       <div className="dataContainer">
         <img className="avatar" src={pfp} alt="" />
-        <div className="header">
-        🤙 Aloha!
-        </div>
+        <h1 className="header">
+        ☠️ Greetings!
+        </h1>
 
         <div className="bio">
           <p>I'm DiFool, a web3 student and enthusiast.</p>
-          <p>Connect your Ethereum wallet and wave at me!</p>
+          <p>Connect your wallet and send me a message!</p>
         </div>
 
         {currentAccount && (
-          <>
+          <div className="account">
           <p>Connected account:</p>
           <p>{currentAccount}</p>
-          </>
+          </div>
         )}
 
-        <form>
-          <input type="text" onChange={e => setMessage(e.target.value)}/>
+        <form onSubmit={e => {
+          e.preventDefault();
+          wave();
+        }}>
+          <input type="text" onChange={e => setMessage(e.target.value)} required/>
+          <button className="waveButton">
+            Send Message
+          </button>
         </form>
 
-        <button className="waveButton" onClick={wave}>
-          Wave at Me
-        </button>
         {!currentAccount && (
           <button className="waveButton" onClick={connectWallet}>
             Connect Wallet
@@ -156,10 +159,10 @@ useEffect(() => {
 
         {allWaves.map((wave, index) => {
           return (
-            <div key={index} style={{ backgroundColor: "OldLace", marginTop: "16px", padding: "8px" }}>
-              <div>Address: {wave.address}</div>
-              <div>Time: {wave.timestamp.toString()}</div>
-              <div>Message: {wave.message}</div>
+            <div key={index} className="msgContainer">
+              <h2>{wave.message}</h2>
+              <div>From: {wave.address}</div>
+              <div>Date: {wave.timestamp.toString()}</div>
             </div>)
         })}
       </div>
