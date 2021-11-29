@@ -5,9 +5,16 @@ import pfp from './pfp.jpg';
 import abi from './utils/WavePortal.json';
 
 function App() {
+  // declare ethereum object, provider and signer
+  const { ethereum } = window;
+  const provider = new ethers.providers.Web3Provider(ethereum);
+  const signer = provider.getSigner();
 
   // state variable to store user's wallet address
   const [ currentAccount, setCurrentAccount ] = useState("");
+  const [ currentBalance, setCurrentBalance ] = useState("");
+  const [ ensName, setEnsName ] = useState("");
+  const [ currentNetworkName, setCurrentNetworkName] = useState("");
   const [ allWaves, setAllWaves ] = useState([]);
   const [ message, setMessage ] = useState("");
 
@@ -16,21 +23,18 @@ function App() {
 
   const getAllWaves = async () => {
     try {
-      const { ethereum } = window;
       if (ethereum) {
-        const provider = await new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
+        // declare contract
         const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-
+        // declare output of contract function getAllWaves
         const waves = await wavePortalContract.getAllWaves();
 
-        let wavesCleaned = [];
-        waves.forEach(wave => {
-          wavesCleaned.push({
+        const wavesCleaned = waves.map(wave => {
+          return {
             address: wave.waver,
             timestamp: new Date(wave.timestamp * 1000),
             message: wave.message
-          });
+          };
         });
 
         setAllWaves(wavesCleaned);
@@ -40,17 +44,49 @@ function App() {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
+
+  // listen for emitted event
+  useEffect(() => {
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      setAllWaves(prevState => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+
+    if(ethereum) {
+      const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+      // listen for emitted event
+      wavePortalContract.on('NewWave', onNewWave);
+    }
+
+    // cleanup function
+    return ( () => {
+      if (wavePortalContract) {
+        wavePortalContract.off('NewWave', onNewWave);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const checkIfWalletIsConnected = async () => {
     try {
-      const { ethereum } = window;
-
       if (!ethereum) {
         console.log("No wallet detected. Get MetaMask!");
         return;
       } else {
         console.log("We have the ethereum object", ethereum);
+        // get
+        const networkName = (await provider.getNetwork()).name;
+        setCurrentNetworkName(networkName);
       }
 
       const accounts = await ethereum.request({ method: "eth_accounts"});
@@ -59,6 +95,12 @@ function App() {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
+        const ens = await provider.lookupAddress(account);
+        console.log("👋",ens);
+        const balance = parseFloat(ethers.utils.formatEther(await signer.getBalance())).toFixed(2);
+        console.log(`You got ${balance}Ξ`);
+        setEnsName(ens);
+        setCurrentBalance(balance);
         getAllWaves();
       } else {
         console.log("No authorized account found.");
@@ -71,7 +113,6 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      const { ethereum } = window;
       if(!ethereum) {
         console.log("Get MetaMask!");
       }
@@ -87,11 +128,7 @@ function App() {
 
   const wave = async () => {
     try {
-      const { ethereum } = window;
-
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
         const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
         let count = await wavePortalContract.getTotalWaves();
@@ -136,8 +173,24 @@ useEffect(() => {
 
         {currentAccount && (
           <div className="account">
-          <p>Connected account:</p>
-          <p>{currentAccount}</p>
+            <div className="accountDetail">
+              <p>Network:</p>
+              <span>
+                {currentNetworkName !== "rinkeby" ? "Switch to Rinkeby 😙" : currentNetworkName}
+              </span>
+            </div>
+            <div className="accountDetail">
+              <p>Connected account:</p>
+              <span>
+                {ensName ? ensName : currentAccount}
+              </span>
+            </div>
+            <div className="accountDetail">
+              <p>Balance:</p>
+              <span>
+                {currentBalance}Ξ
+              </span>
+            </div>
           </div>
         )}
 
@@ -157,14 +210,16 @@ useEffect(() => {
           </button>
         )}
 
-        {allWaves.map((wave, index) => {
-          return (
-            <div key={index} className="msgContainer">
-              <h2>{wave.message}</h2>
-              <div>From: {wave.address}</div>
-              <div>Date: {wave.timestamp.toString()}</div>
-            </div>)
-        })}
+        <div className="msgFeed">
+          {allWaves.map((wave, index) => {
+            return (
+              <div key={index} className="msgContainer">
+                <h2>{wave.message}</h2>
+                <p>From: {wave.address}</p>
+                <p>Date: {wave.timestamp.toLocaleString()}</p>
+              </div>)
+          })}
+        </div>
       </div>
     </div>
   );

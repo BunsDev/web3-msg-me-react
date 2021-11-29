@@ -8,6 +8,7 @@
   --dark: #0d0315;
   --grey: #161522;
   --blue: darkslateblue;
+  --purple: #9325e4;
   --white: whitesmoke;
 
   --sm: 18px;
@@ -29,6 +30,19 @@ p {
 form {
   display: flex;
   flex-direction: column;
+}
+
+input {
+  text-align: center;
+  font-size: var(--sm);
+  background-color: var(--white);
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+}
+
+input:focus {
+  outline: 2px solid var(--purple);
 }
 
 .mainContainer {
@@ -57,6 +71,10 @@ form {
   margin-top: 16px;
 }
 
+.bio p {
+  margin-block: 0.5rem;
+}
+
 .waveButton {
   cursor: pointer;
   margin-top: 16px;
@@ -65,6 +83,12 @@ form {
   border-radius: 5px;
   background-color: var(--blue);
   color: var(--white);
+  font-size: var(--sm);
+  font-weight: bold;
+}
+
+.waveButton:focus {
+  outline: 2px solid var(--purple);
 }
 
 .avatar {
@@ -74,8 +98,22 @@ form {
 }
 
 .account {
-  margin: 1rem;
   text-align: center;
+  margin-bottom: 1rem;
+}
+
+.account span {
+  font-size: var(--sm);
+  font-weight: bold;
+  color: var(--white);
+}
+
+.accountDetail {
+  margin-block: 1rem;
+}
+
+.msgFeed {
+  margin-block: 1rem;
 }
 
 .msgContainer {
@@ -87,4 +125,8 @@ form {
 
 .msgContainer h2 {
   color: whitesmoke;
+}
+
+.msgContainer p {
+  margin-block: 0.5rem;
 }
