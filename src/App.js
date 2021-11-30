@@ -127,6 +127,7 @@ function App() {
       const accounts = await ethereum.request({ method: "eth_requestAccounts"});
       console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]);
+      window.location.reload();
 
     } catch (error) {
 
@@ -206,16 +207,17 @@ useEffect(() => {
             </div>
           </div>
         )}
-
-        <form onSubmit={e => {
-          e.preventDefault();
-          wave();
-        }}>
-          <input type="text" onChange={e => setMessage(e.target.value)} required/>
-          <button className="waveButton">
-            Send Message
-          </button>
-        </form>
+        {currentAccount && (
+          <form onSubmit={e => {
+            e.preventDefault();
+            wave();
+          }}>
+            <input type="text" onChange={e => setMessage(e.target.value)} required/>
+            <button className="waveButton">
+              Send Message
+            </button>
+          </form>
+        )}
 
         {!currentAccount && (
           <button className="waveButton" onClick={connectWallet}>
