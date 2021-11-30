@@ -7,18 +7,25 @@ import abi from './utils/WavePortal.json';
 function App() {
   // declare ethereum object, provider and signer
   const { ethereum } = window;
-  const provider = new ethers.providers.Web3Provider(ethereum);
+  const provider = new ethers.providers.Web3Provider(ethereum, "any");
+
+  // refresh window on network change
+  provider.on("network", (newNetwork, oldNetwork) => {
+    if (oldNetwork) {
+      window.location.reload();
+    }
+  })
   const signer = provider.getSigner();
 
   // state variable to store user's wallet address
   const [ currentAccount, setCurrentAccount ] = useState("");
   const [ currentBalance, setCurrentBalance ] = useState("");
   const [ ensName, setEnsName ] = useState("");
-  const [ currentNetworkName, setCurrentNetworkName] = useState("");
+  const [ networkName, setNetworkName] = useState("");
   const [ allWaves, setAllWaves ] = useState([]);
   const [ message, setMessage ] = useState("");
 
-  const contractAddress = "0x807042407E0B7d59Bcc9aBd173a1C53af67f8F78";
+  const contractAddress = "0x4B99a1efd4E36720cc7184e49cBC44A25B785045";
   const contractABI = abi.abi;
 
   const getAllWaves = async () => {
@@ -85,8 +92,8 @@ function App() {
       } else {
         console.log("We have the ethereum object", ethereum);
         // get
-        const networkName = (await provider.getNetwork()).name;
-        setCurrentNetworkName(networkName);
+        const network = (await provider.getNetwork());
+        setNetworkName(network.name);
       }
 
       const accounts = await ethereum.request({ method: "eth_accounts"});
@@ -96,7 +103,7 @@ function App() {
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
         const ens = await provider.lookupAddress(account);
-        console.log("👋",ens);
+        ens ? console.log("👋🏼",ens) : console.log("👋🏼", account);
         const balance = parseFloat(ethers.utils.formatEther(await signer.getBalance())).toFixed(2);
         console.log(`You got ${balance}Ξ`);
         setEnsName(ens);
@@ -160,6 +167,11 @@ useEffect(() => {
 
   return (
     <div className="mainContainer">
+      {networkName !== "rinkeby" && (
+        <div className="warning">
+          <h2>Please switch to the Rinkeby Test Network!</h2>
+        </div>
+      )}
       <div className="dataContainer">
         <img className="avatar" src={pfp} alt="" />
         <h1 className="header">
@@ -167,8 +179,9 @@ useEffect(() => {
         </h1>
 
         <div className="bio">
-          <p>I'm DiFool, a web3 student and enthusiast.</p>
+          <p>I'm <a href="https://twitter.com/DiFool0x" target="_blank" rel="noreferrer">DiFool</a>, a web3 student and enthusiast.</p>
           <p>Connect your wallet and send me a message!</p>
+          <p>You may win some test ETH 😈</p>
         </div>
 
         {currentAccount && (
@@ -176,7 +189,7 @@ useEffect(() => {
             <div className="accountDetail">
               <p>Network:</p>
               <span>
-                {currentNetworkName !== "rinkeby" ? "Switch to Rinkeby 😙" : currentNetworkName}
+                {networkName}
               </span>
             </div>
             <div className="accountDetail">

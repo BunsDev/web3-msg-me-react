@@ -16,15 +16,19 @@
 
 body {
   background-color: var(--dark);
-  color: var(--blue);
+  color: var(--white);
 }
 
 h1 {
-  color: var(--white);
+  color: var(--purple);
 }
 
 p {
   font-size: var(--sm);
+}
+
+a {
+  color: var(--purple);
 }
 
 form {
@@ -50,6 +54,16 @@ input:focus {
   justify-content: center;
   width: 100%;
   margin-top: 1rem;
+}
+
+.warning {
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  text-align: center;
+  background-color: var(--purple);
+  color: var(--white);
+  padding: 20px;
 }
 
 .dataContainer {
@@ -81,14 +95,14 @@ input:focus {
   padding: 8px;
   border: 0;
   border-radius: 5px;
-  background-color: var(--blue);
+  background-color: var(--purple);
   color: var(--white);
   font-size: var(--sm);
   font-weight: bold;
 }
 
 .waveButton:focus {
-  outline: 2px solid var(--purple);
+  outline: 2px solid var(--white);
 }
 
 .avatar {
@@ -105,7 +119,7 @@ input:focus {
 .account span {
   font-size: var(--sm);
   font-weight: bold;
-  color: var(--white);
+  color: var(--purple);
 }
 
 .accountDetail {
