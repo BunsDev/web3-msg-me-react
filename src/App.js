@@ -174,7 +174,7 @@ useEffect(() => {
         </div>
       )}
       <div className="dataContainer">
-        <img className="avatar" src={pfp} alt="" />
+        <img className="avatar" src={pfp} alt="difool" />
         <h1 className="header">
         ☠️ Greetings!
         </h1>
