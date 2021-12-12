@@ -5,17 +5,7 @@ import pfp from './pfp.jpg';
 import abi from './utils/WavePortal.json';
 
 function App() {
-  // declare ethereum object, provider and signer
   const { ethereum } = window;
-  const provider = new ethers.providers.Web3Provider(ethereum, "any");
-
-  // refresh window on network change
-  provider.on("network", (newNetwork, oldNetwork) => {
-    if (oldNetwork) {
-      window.location.reload();
-    }
-  })
-  const signer = provider.getSigner();
 
   // state variable to store user's wallet address
   const [ currentAccount, setCurrentAccount ] = useState("");
@@ -25,10 +15,20 @@ function App() {
   const [ allWaves, setAllWaves ] = useState([]);
   const [ message, setMessage ] = useState("");
 
+  // contract info
   const contractAddress = "0x4B99a1efd4E36720cc7184e49cBC44A25B785045";
   const contractABI = abi.abi;
 
   const getAllWaves = async () => {
+    const provider = new ethers.providers.Web3Provider(ethereum, "any");
+    const signer = provider.getSigner();
+    // refresh window on network change
+    provider.on("network", (newNetwork, oldNetwork) => {
+      if (oldNetwork) {
+        window.location.reload();
+      }
+    });
+
     try {
       if (ethereum) {
         // declare contract
@@ -55,64 +55,104 @@ function App() {
 
   // listen for emitted event
   useEffect(() => {
-    let wavePortalContract;
-
-    const onNewWave = (from, timestamp, message) => {
-      console.log("NewWave", from, timestamp, message);
-      setAllWaves(prevState => [
-        ...prevState,
-        {
-          address: from,
-          timestamp: new Date(timestamp * 1000),
-          message: message,
-        },
-      ]);
-    };
-
     if(ethereum) {
-      const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+      const provider = new ethers.providers.Web3Provider(ethereum, "any");
+      const signer = provider.getSigner();
+      // refresh window on network change
+      provider.on("network", (newNetwork, oldNetwork) => {
+        if (oldNetwork) {
+          window.location.reload();
+        }
+      });
+
+      let wavePortalContract;
+      const onNewWave = (from, timestamp, message) => {
+        console.log("NewWave", from, timestamp, message);
+        setAllWaves(prevState => [
+          ...prevState,
+          {
+            address: from,
+            timestamp: new Date(timestamp * 1000),
+            message: message,
+          },
+        ]);
+      };
+
+      wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
       // listen for emitted event
       wavePortalContract.on('NewWave', onNewWave);
     }
 
     // cleanup function
     return ( () => {
-      if (wavePortalContract) {
-        wavePortalContract.off('NewWave', onNewWave);
+      if(ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum, "any");
+        const signer = provider.getSigner();
+        // refresh window on network change
+        provider.on("network", (newNetwork, oldNetwork) => {
+          if (oldNetwork) {
+            window.location.reload();
+          }
+        });
+        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+        const onNewWave = (from, timestamp, message) => {
+          console.log("NewWave", from, timestamp, message);
+          setAllWaves(prevState => [
+            ...prevState,
+            {
+              address: from,
+              timestamp: new Date(timestamp * 1000),
+              message: message,
+            },
+          ]);
+        };
+
+        if (wavePortalContract) {
+          wavePortalContract.off('NewWave', onNewWave);
+        }
+
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkIfWalletIsConnected = async () => {
-    try {
-      if (!ethereum) {
-        console.log("No wallet detected. Get MetaMask!");
-        return;
-      } else {
-        console.log("We have the ethereum object", ethereum);
-        // get
-        const network = (await provider.getNetwork());
-        setNetworkName(network.name);
-      }
+      try {
+        if (ethereum) {
+          console.log("We have the ethereum object", ethereum);
+          const provider = new ethers.providers.Web3Provider(ethereum, "any");
+          const signer = provider.getSigner();
+          // refresh window on network change
+          provider.on("network", (newNetwork, oldNetwork) => {
+            if (oldNetwork) {
+              window.location.reload();
+            }
+          });
+          const network = await provider.getNetwork();
+          if(network.name !== "rinkeby") {
+            alert('Please switch to Rinkeby Test Network');
+          }
+          setNetworkName(network.name);
+          const accounts = await ethereum.request({ method: "eth_accounts"});
 
-      const accounts = await ethereum.request({ method: "eth_accounts"});
-
-      if (accounts.length !== 0) {
-        const account = accounts[0];
-        console.log("Found an authorized account:", account);
-        setCurrentAccount(account);
-        const ens = await provider.lookupAddress(account);
-        ens ? console.log("👋🏼",ens) : console.log("👋🏼", account);
-        const balance = parseFloat(ethers.utils.formatEther(await signer.getBalance())).toFixed(2);
-        console.log(`You got ${balance}Ξ`);
-        setEnsName(ens);
-        setCurrentBalance(balance);
-        getAllWaves();
-      } else {
-        console.log("No authorized account found.");
-      }
-
+          if (accounts.length !== 0) {
+            const account = accounts[0];
+            console.log("Found an authorized account:", account);
+            setCurrentAccount(account);
+            const ens = await provider.lookupAddress(account);
+            ens ? console.log("👋🏼",ens) : console.log("👋🏼", account);
+            const balance = parseFloat(ethers.utils.formatEther(await signer.getBalance())).toFixed(2);
+            console.log(`You got ${balance}Ξ`);
+            setEnsName(ens);
+            setCurrentBalance(balance);
+            getAllWaves();
+          } else {
+            console.log("No authorized account found.");
+          }
+        } else {
+          console.log("No wallet detected. Get MetaMask!");
+          return;
+        }
     } catch (error) {
       console.log(error);
     }
@@ -120,23 +160,32 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      if(!ethereum) {
+      if(ethereum) {
+        const accounts = await ethereum.request({ method: "eth_requestAccounts"});
+        console.log("Connected", accounts[0]);
+        setCurrentAccount(accounts[0]);
+        window.location.reload();
+      } else {
         console.log("Get MetaMask!");
+        alert("Get MetaMask!");
+        return;
       }
-
-      const accounts = await ethereum.request({ method: "eth_requestAccounts"});
-      console.log("Connected", accounts[0]);
-      setCurrentAccount(accounts[0]);
-      window.location.reload();
-
     } catch (error) {
-
+      console.log(error);
     }
   }
 
   const wave = async () => {
     try {
       if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum, "any");
+        const signer = provider.getSigner();
+        // refresh window on network change
+        provider.on("network", (newNetwork, oldNetwork) => {
+          if (oldNetwork) {
+            window.location.reload();
+          }
+        });
         const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
         let count = await wavePortalContract.getTotalWaves();
@@ -168,11 +217,6 @@ useEffect(() => {
 
   return (
     <div className="mainContainer">
-      {networkName !== "rinkeby" && (
-        <div className="warning">
-          <h2>Please switch to the Rinkeby Test Network!</h2>
-        </div>
-      )}
       <div className="dataContainer">
         <img className="avatar" src={pfp} alt="difool" />
         <h1 className="header">
